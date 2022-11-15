@@ -10,12 +10,10 @@ def update_slider_vals(kl, kh, new_l, new_h):
 fnames = st.file_uploader("Upload an RGB image", type=["png", "jpg"],
                         accept_multiple_files=True)
 file_num = st.number_input("Image to display", min_value=1, max_value=len(fnames))
+grid = st.checkbox("Grid layout?")
+tabnames = ("R", "G", "B", "H", "S", "V")
 
 if len(fnames) != 0:
-    # create and display tabs
-    tabnames = ("R", "G", "B", "H", "S", "V")
-    tabs = st.tabs(tabnames)
-    
     # load channels
     fname = fnames[file_num - 1]
     img = Image.open(fname).convert("RGB") # BGR format
@@ -27,11 +25,14 @@ if len(fnames) != 0:
     h = hsv[:, :, 0]
     s = hsv[:, :, 1]
     v = hsv[:, :, 2]
-        
+
     # iterate channels and show with masks
-    for i,im in enumerate((r, g, b, h, s, v)):
-        with tabs[i]:
-            st.header(tabnames[i])
+    if grid:
+        c1, c2, c3 = st.columns(3)
+        for i,im in enumerate((r, g, b, h, s, v)):
+            index = i - 3 if i >= 3 else i
+            col = (c1, c2, c3)[index]
+            col.header(tabnames[i])
             k_low = "low_" + tabnames[i]
             k_high = "high_" + tabnames[i]
             if k_low in st.session_state:
@@ -41,11 +42,33 @@ if len(fnames) != 0:
                 low, high = 0, 255
                 
             k = f"{tabnames[i]}_{i}"
-            l, h = st.slider("Select a values for thresholding",
+            l, h = col.slider("Select a values for thresholding",
                             0, 255, (low, high), step=5, key=k,
                             on_change=update_slider_vals, kwargs={"kl" : k_low,
                             "kh" : k_high, "new_l" : low, "new_h" : high}
                             )
-            c1, c2 = st.columns(2)
-            c1.image(im)
-            c2.image(cv2.inRange(im, l, h))
+            col.image(cv2.inRange(im, l, h))
+            
+    else:
+        # create and display tabs
+        tabs = st.tabs(tabnames)
+        for i,im in enumerate((r, g, b, h, s, v)):
+            with tabs[i]:
+                st.header(tabnames[i])
+                k_low = "low_" + tabnames[i]
+                k_high = "high_" + tabnames[i]
+                if k_low in st.session_state:
+                    low = st.session_state[k_low]
+                    high = st.session_state[k_high]
+                else:
+                    low, high = 0, 255
+                    
+                k = f"{tabnames[i]}_{i}"
+                l, h = st.slider("Select a values for thresholding",
+                                0, 255, (low, high), step=5, key=k,
+                                on_change=update_slider_vals, kwargs={"kl" : k_low,
+                                "kh" : k_high, "new_l" : low, "new_h" : high}
+                                )
+                c1, c2 = st.columns(2)
+                c1.image(im)
+                c2.image(cv2.inRange(im, l, h))
