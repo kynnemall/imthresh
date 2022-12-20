@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import streamlit as st
 from PIL import Image
+from streamlit_toggle import st_toggle_switch
 
 def update_slider_vals(kl, kh, new_l, new_h):
     st.session_state[kl] = new_l
@@ -10,7 +11,10 @@ def update_slider_vals(kl, kh, new_l, new_h):
 fnames = st.file_uploader("Upload an RGB image", type=["png", "jpg"],
                         accept_multiple_files=True)
 file_num = st.number_input("Image to display", min_value=1, max_value=len(fnames))
-grid = st.checkbox("Grid layout?")
+grid = st_toggle_switch(
+    label="Grid layout?",
+    default_value=False,
+)
 tabnames = ("R", "G", "B", "H", "S", "V")
 
 if len(fnames) != 0:
