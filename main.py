@@ -10,7 +10,8 @@ def update_slider_vals(kl, kh, new_l, new_h):
 
 fnames = st.file_uploader("Upload an RGB image", type=["png", "jpg"],
                         accept_multiple_files=True)
-file_num = st.number_input("Image to display", min_value=1, max_value=len(fnames))
+min_val = 1 if fnames else 0
+file_num = st.number_input("Image to display", min_value=min_val, max_value=len(fnames))
 grid = st_toggle_switch(
     label="Grid layout?",
     default_value=False,
